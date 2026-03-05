@@ -1,0 +1,983 @@
+ <!-- ==================== COMMUNITY PAGE ==================== -->
+<div id="page-community" class="page">
+  <section class="py-12 bg-gradient-to-b from-green-50 to-white min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h1 class="font-display text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Community</h1>
+        <p class="text-gray-600 text-lg">Connect with fellow plant enthusiasts and share your gardening journey.</p>
+      </div>
+
+      <!-- Create Post Button -->
+      <div class="mb-8">
+        <button onclick="toggleCreatePost()" id="createPostBtn" class="w-full bg-white rounded-2xl p-6 border-2 border-dashed border-green-200 hover:border-green-400 hover:bg-green-50 transition-all text-left">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-2xl">+</div>
+            <span class="text-gray-500 font-medium">Share something with the community...</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Create Post Form (Hidden by default) -->
+      <div id="createPostForm" class="hidden mb-8 bg-white rounded-2xl p-6 shadow-lg border border-green-100">
+        <h3 class="font-display text-xl font-bold text-gray-900 mb-4">Create New Post</h3>
+        <form onsubmit="submitPost(event)">
+          <input type="text" id="postTitle" placeholder="Post title..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none mb-4" required>
+          <textarea id="postContent" placeholder="What's on your mind? Share your plant stories, questions, or tips..." rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none resize-none mb-4" required></textarea>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <button type="button" onclick="triggerImageUpload()" class="flex items-center gap-2 text-gray-500 hover:text-green-600 transition-colors">
+                <span>📷</span> Photo
+              </button>
+              <button type="button" onclick="toggleTagSelector()" class="flex items-center gap-2 text-gray-500 hover:text-green-600 transition-colors">
+                <span>🏷️</span> Tag
+              </button>
+            </div>
+            <div class="flex gap-3">
+              <button type="button" onclick="toggleCreatePost()" class="px-6 py-2 rounded-full border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+              <button type="submit" class="btn-primary px-6 py-2 rounded-full text-white font-medium">Post</button>
+            </div>
+          </div>
+
+          <!-- Hidden image upload input -->
+          <input type="file" id="postImage" accept="image/*" class="hidden" onchange="handlePostImageUpload(event)">
+          
+          <!-- Tag selector (hidden by default) -->
+          <div id="tagSelector" class="hidden mt-4 p-4 bg-gray-50 rounded-xl">
+            <p class="text-sm font-medium text-gray-700 mb-2">Select tags:</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="addTag('plants')" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200">#plants</button>
+              <button type="button" onclick="addTag('help')" class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm hover:bg-amber-200">#help</button>
+              <button type="button" onclick="addTag('tips')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200">#tips</button>
+              <button type="button" onclick="addTag('showcase')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200">#showcase</button>
+              <button type="button" onclick="addTag('question')" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200">#question</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Search and Filter Bar -->
+      <div class="mb-8 flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+          <input type="text" id="searchPosts" placeholder="Search discussions..." class="w-full px-4 py-3 pl-12 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none">
+          <span class="absolute left-4 top-3.5 text-gray-400">🔍</span>
+        </div>
+        <select id="filterPosts" onchange="filterCommunityPosts()" class="px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none bg-white">
+          <option value="latest">Latest</option>
+          <option value="popular">Most Popular</option>
+          <option value="my-posts">My Posts</option>
+        </select>
+      </div>
+
+      <!-- Community Posts -->
+      <div id="communityPosts" class="space-y-6">
+        <!-- Posts will be rendered here -->
+      </div>
+
+      <!-- Load More Button -->
+      <div class="text-center mt-8" id="loadMoreContainer">
+        <button onclick="loadMorePosts()" class="px-6 py-3 rounded-full border-2 border-green-200 text-green-700 font-semibold hover:bg-green-50 transition-all">
+          Load More Posts
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ==================== COMMUNITY DATA & STATE ====================
+
+let communityPosts = [
+  {
+    id: 1,
+    author: 'Maria Johnson',
+    authorAvatar: 'MJ',
+    avatarGradient: 'from-purple-400 to-purple-600',
+    timeAgo: '2 hours ago',
+    timestamp: new Date('2024-03-15T10:00:00'),
+    title: 'Help! My monstera leaves are turning yellow',
+    content: 'I\'ve been watering it once a week and it gets indirect sunlight. The leaves started turning yellow last week. Any advice? 🌿',
+    tags: ['help', 'plants'],
+    image: null,
+    comments: [
+      { id: 101, author: 'Tom Green', content: 'Could be overwatering! Let the soil dry out between waterings.', likes: 5, timeAgo: '1 hour ago' },
+      { id: 102, author: 'Sarah Bloom', content: 'Check for root rot. Yellow leaves often indicate too much water.', likes: 3, timeAgo: '45 min ago' }
+    ],
+    likes: 24,
+    liked: false,
+    saved: false
+  },
+  {
+    id: 2,
+    author: 'David Kim',
+    authorAvatar: 'DK',
+    avatarGradient: 'from-blue-400 to-blue-600',
+    timeAgo: '5 hours ago',
+    timestamp: new Date('2024-03-15T07:00:00'),
+    title: 'First harvest of the season! 🍅',
+    content: 'Just harvested my first batch of tomatoes using organic methods! So proud of this journey. They taste amazing!',
+    tags: ['showcase', 'tips'],
+    image: 'https://images.unsplash.com/photo-1592841200230-77c4b6b1f1b1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    comments: [
+      { id: 103, author: 'Lisa Green', content: 'They look perfect! What variety?', likes: 2, timeAgo: '3 hours ago' }
+    ],
+    likes: 56,
+    liked: false,
+    saved: false
+  },
+  {
+    id: 3,
+    author: 'Sarah Chen',
+    authorAvatar: 'SC',
+    avatarGradient: 'from-pink-400 to-pink-600',
+    timeAgo: '1 day ago',
+    timestamp: new Date('2024-03-14T15:00:00'),
+    title: 'Fiddle leaf fig success story! 🌱',
+    content: 'Finally got my fiddle leaf fig to produce new leaves! The secret? Consistency in watering and patience. Here\'s my care routine: water when top 2 inches are dry, mist leaves daily, and rotate weekly.',
+    tags: ['tips', 'showcase'],
+    image: null,
+    comments: [
+      { id: 104, author: 'Mike Root', content: 'Thanks for sharing! How often do you fertilize?', likes: 4, timeAgo: '20 hours ago' },
+      { id: 105, author: 'Emma Watson', content: 'Mine is struggling, going to try your method!', likes: 2, timeAgo: '18 hours ago' }
+    ],
+    likes: 89,
+    liked: false,
+    saved: false
+  },
+  {
+    id: 4,
+    author: 'Alex Rivera',
+    authorAvatar: 'AR',
+    avatarGradient: 'from-teal-400 to-teal-600',
+    timeAgo: '2 days ago',
+    timestamp: new Date('2024-03-13T09:00:00'),
+    title: 'Companion planting experiment',
+    content: 'Does anyone have experience with companion planting? I want to try it in my vegetable garden this season. Thinking of planting basil with tomatoes and marigolds with everything!',
+    tags: ['question', 'plants'],
+    image: null,
+    comments: [
+      { id: 106, author: 'Organic Olivia', content: 'Basil and tomatoes are great together! Also try nasturtiums to repel pests.', likes: 8, timeAgo: '1 day ago' }
+    ],
+    likes: 31,
+    liked: false,
+    saved: false
+  },
+  {
+    id: 5,
+    author: 'Emma Watson',
+    authorAvatar: 'EW',
+    avatarGradient: 'from-indigo-400 to-indigo-600',
+    timeAgo: '3 days ago',
+    timestamp: new Date('2024-03-12T14:00:00'),
+    title: 'My succulent collection is thriving!',
+    content: 'Started with 3 succulents last year, now I have over 20! They\'re so easy to propagate. Anyone else obsessed with succulents? 🌵',
+    tags: ['showcase', 'plants'],
+    image: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    comments: [
+      { id: 107, author: 'Succulent Sam', content: 'Beautiful collection! What\'s your soil mix?', likes: 3, timeAgo: '2 days ago' }
+    ],
+    likes: 67,
+    liked: false,
+    saved: false
+  }
+];
+
+let currentUser = {
+  name: 'You',
+  initials: 'ME',
+  avatarGradient: 'from-green-400 to-green-600',
+  posts: []
+};
+
+let filteredPosts = [...communityPosts];
+let postsPerPage = 3;
+let currentPage = 1;
+let searchTerm = '';
+let currentFilter = 'latest';
+
+// ==================== COMMUNITY FUNCTIONS ====================
+
+// Toggle create post form
+function toggleCreatePost() {
+  const form = document.getElementById('createPostForm');
+  const btn = document.getElementById('createPostBtn');
+  form.classList.toggle('hidden');
+  
+  if (!form.classList.contains('hidden')) {
+    btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('postTitle').focus();
+  }
+}
+
+// Submit new post
+function submitPost(event) {
+  event.preventDefault();
+  
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('postContent').value.trim();
+  
+  if (!title || !content) {
+    showToast('Please fill in both title and content! 📝');
+    return;
+  }
+  
+  const newPost = {
+    id: communityPosts.length + 1,
+    author: currentUser.name,
+    authorAvatar: currentUser.initials,
+    avatarGradient: currentUser.avatarGradient,
+    timeAgo: 'Just now',
+    timestamp: new Date(),
+    title: title,
+    content: content,
+    tags: [],
+    image: uploadedPostImage || null,
+    comments: [],
+    likes: 0,
+    liked: false,
+    saved: false
+  };
+  
+  communityPosts.unshift(newPost);
+  currentUser.posts.push(newPost.id);
+  
+  // Reset form
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postContent').value = '';
+  if (uploadedPostImage) {
+    resetPostImage();
+  }
+  
+  // Update UI
+  applyFilters();
+  toggleCreatePost();
+  showToast('Post published successfully! 🌱');
+  
+  // Announce to screen readers
+  const announcement = document.createElement('div');
+  announcement.setAttribute('aria-live', 'polite');
+  announcement.className = 'sr-only';
+  announcement.textContent = 'New post created';
+  document.body.appendChild(announcement);
+  setTimeout(() => announcement.remove(), 3000);
+}
+
+// Image upload handling
+let uploadedPostImage = null;
+
+function triggerImageUpload() {
+  document.getElementById('postImage').click();
+}
+
+function handlePostImageUpload(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image too large! Maximum 5MB 📸');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      uploadedPostImage = e.target.result;
+      showToast('Image uploaded! 📷');
+      
+      // Show preview
+      const previewDiv = document.createElement('div');
+      previewDiv.id = 'imagePreview';
+      previewDiv.className = 'mt-4 relative inline-block';
+      previewDiv.innerHTML = `
+        <img src="${e.target.result}" class="h-20 w-20 object-cover rounded-lg border-2 border-green-200">
+        <button type="button" onclick="removePostImage()" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600">×</button>
+      `;
+      
+      const existingPreview = document.getElementById('imagePreview');
+      if (existingPreview) existingPreview.remove();
+      
+      document.querySelector('#createPostForm form').appendChild(previewDiv);
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removePostImage() {
+  uploadedPostImage = null;
+  document.getElementById('postImage').value = '';
+  document.getElementById('imagePreview')?.remove();
+}
+
+function resetPostImage() {
+  uploadedPostImage = null;
+  document.getElementById('postImage').value = '';
+  document.getElementById('imagePreview')?.remove();
+}
+
+// Tag handling
+function toggleTagSelector() {
+  const selector = document.getElementById('tagSelector');
+  selector.classList.toggle('hidden');
+}
+
+function addTag(tag) {
+  // In a real app, this would add the tag to the post
+  showToast(`Added #${tag} tag! 🏷️`);
+  toggleTagSelector();
+}
+
+// Like post
+function likePost(postId) {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    if (post.liked) {
+      post.likes -= 1;
+      post.liked = false;
+    } else {
+      post.likes += 1;
+      post.liked = true;
+    }
+    renderCommunityPosts();
+    
+    // Show toast with animation
+    const likeBtn = document.querySelector(`[onclick="likePost(${postId})"]`);
+    if (likeBtn) {
+      likeBtn.classList.add('animate-pulse');
+      setTimeout(() => likeBtn.classList.remove('animate-pulse'), 300);
+    }
+  }
+}
+
+// Save post
+function savePost(postId) {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    post.saved = !post.saved;
+    renderCommunityPosts();
+    showToast(post.saved ? 'Post saved! 📌' : 'Post removed from saved');
+  }
+}
+
+// Comment on post
+function commentOnPost(postId) {
+  const comment = prompt('Enter your comment:');
+  if (comment && comment.trim()) {
+    const post = communityPosts.find(p => p.id === postId);
+    if (post) {
+      const newComment = {
+        id: Date.now(),
+        author: currentUser.name,
+        content: comment.trim(),
+        likes: 0,
+        timeAgo: 'Just now'
+      };
+      post.comments.push(newComment);
+      renderCommunityPosts();
+      showToast('Comment added! 💬');
+    }
+  }
+}
+
+// Share post
+function sharePost(postId) {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    // In a real app, this would open share dialog
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.content,
+        url: window.location.href
+      }).catch(() => {
+        showToast('Share cancelled');
+      });
+    } else {
+      // Fallback
+      navigator.clipboard.writeText(`${post.title} - ${post.content}`).then(() => {
+        showToast('Post copied to clipboard! 📋');
+      }).catch(() => {
+        showToast('Share feature coming soon! 📤');
+      });
+    }
+  }
+}
+
+// Search and filter
+function filterCommunityPosts() {
+  const filterSelect = document.getElementById('filterPosts');
+  const searchInput = document.getElementById('searchPosts');
+  
+  currentFilter = filterSelect.value;
+  searchTerm = searchInput.value.toLowerCase();
+  
+  applyFilters();
+}
+
+function applyFilters() {
+  // Start with all posts
+  let filtered = [...communityPosts];
+  
+  // Apply search
+  if (searchTerm) {
+    filtered = filtered.filter(post => 
+      post.title.toLowerCase().includes(searchTerm) ||
+      post.content.toLowerCase().includes(searchTerm) ||
+      post.author.toLowerCase().includes(searchTerm) ||
+      post.tags.some(tag => tag.includes(searchTerm))
+    );
+  }
+  
+  // Apply sort
+  switch (currentFilter) {
+    case 'popular':
+      filtered.sort((a, b) => b.likes - a.likes);
+      break;
+    case 'my-posts':
+      filtered = filtered.filter(post => currentUser.posts.includes(post.id));
+      break;
+    case 'latest':
+    default:
+      filtered.sort((a, b) => b.timestamp - a.timestamp);
+  }
+  
+  filteredPosts = filtered;
+  currentPage = 1;
+  renderCommunityPosts();
+}
+
+// Load more posts (pagination)
+function loadMorePosts() {
+  currentPage++;
+  renderCommunityPosts();
+}
+
+// Render community posts
+function renderCommunityPosts() {
+  const container = document.getElementById('communityPosts');
+  if (!container) return;
+  
+  const startIndex = 0;
+  const endIndex = currentPage * postsPerPage;
+  const postsToShow = filteredPosts.slice(startIndex, endIndex);
+  
+  if (postsToShow.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-12 bg-white rounded-2xl border border-green-100">
+        <span class="text-6xl mb-4 block">🌱</span>
+        <h3 class="font-display text-xl font-bold text-gray-900 mb-2">No posts found</h3>
+        <p class="text-gray-500">Be the first to share something with the community!</p>
+        <button onclick="toggleCreatePost()" class="mt-4 btn-primary px-6 py-2 rounded-full text-white font-medium">Create Post</button>
+      </div>
+    `;
+    document.getElementById('loadMoreContainer').classList.add('hidden');
+    return;
+  }
+  
+  let html = '';
+  
+  postsToShow.forEach(post => {
+    const isLiked = post.liked ? 'text-red-500' : 'text-gray-500';
+    const likeIcon = post.liked ? '❤️' : '🤍';
+    const saveIcon = post.saved ? '🔖' : '📌';
+    
+    html += `
+      <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all border border-green-100/50">
+        <!-- Post Header -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br ${post.avatarGradient} flex items-center justify-center text-white font-bold text-lg">
+              ${post.authorAvatar}
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900">${post.author}</h4>
+              <p class="text-sm text-gray-500">${post.timeAgo}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="savePost(${post.id})" class="text-gray-400 hover:text-amber-600 transition-colors" title="Save post">
+              <span class="text-xl">${saveIcon}</span>
+            </button>
+            <button class="text-gray-400 hover:text-gray-600 transition-colors" onclick="showPostMenu(${post.id})">
+              <span class="text-xl">•••</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Post Title -->
+        <h3 class="font-display text-xl font-bold text-gray-900 mb-2">${escapeHtml(post.title)}</h3>
+        
+        <!-- Post Content -->
+        <p class="text-gray-600 leading-relaxed mb-4">${escapeHtml(post.content)}</p>
+        
+        <!-- Post Image (if exists) -->
+        ${post.image ? `
+          <div class="mb-4 rounded-xl overflow-hidden">
+            <img src="${post.image}" alt="Post image" class="w-full h-64 object-cover hover:scale-105 transition-transform duration-300">
+          </div>
+        ` : ''}
+        
+        <!-- Tags -->
+        ${post.tags && post.tags.length > 0 ? `
+          <div class="flex flex-wrap gap-2 mb-4">
+            ${post.tags.map(tag => `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">#${tag}</span>`).join('')}
+          </div>
+        ` : ''}
+        
+        <!-- Comments Section -->
+        ${post.comments && post.comments.length > 0 ? `
+          <div class="mb-4 space-y-3">
+            <p class="text-sm font-semibold text-gray-700">Comments (${post.comments.length})</p>
+            ${post.comments.slice(0, 2).map(comment => `
+              <div class="flex items-start gap-2 pl-4 border-l-2 border-green-200">
+                <div>
+                  <p class="text-xs font-semibold text-gray-900">${comment.author}</p>
+                  <p class="text-sm text-gray-600">${escapeHtml(comment.content)}</p>
+                  <p class="text-xs text-gray-400 mt-1">${comment.timeAgo}</p>
+                </div>
+              </div>
+            `).join('')}
+            ${post.comments.length > 2 ? `
+              <button onclick="showAllComments(${post.id})" class="text-xs text-green-600 hover:text-green-700">
+                View all ${post.comments.length} comments
+              </button>
+            ` : ''}
+          </div>
+        ` : ''}
+        
+        <!-- Post Actions -->
+        <div class="flex items-center gap-6 pt-4 border-t border-gray-100">
+          <button onclick="likePost(${post.id})" class="flex items-center gap-2 ${isLiked} hover:text-red-600 transition-colors group">
+            <span class="text-xl group-hover:scale-110 transition-transform">${likeIcon}</span>
+            <span class="font-medium">${post.likes}</span>
+          </button>
+          <button onclick="commentOnPost(${post.id})" class="flex items-center gap-2 text-gray-500 hover:text-green-600 transition-colors group">
+            <span class="text-xl group-hover:scale-110 transition-transform">💬</span>
+            <span class="font-medium">${post.comments.length}</span>
+          </button>
+          <button onclick="sharePost(${post.id})" class="flex items-center gap-2 text-gray-500 hover:text-green-600 transition-colors group">
+            <span class="text-xl group-hover:scale-110 transition-transform">📤</span>
+            <span class="font-medium">Share</span>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  // Hide load more if no more posts
+  if (endIndex >= filteredPosts.length) {
+    document.getElementById('loadMoreContainer').classList.add('hidden');
+  } else {
+    document.getElementById('loadMoreContainer').classList.remove('hidden');
+  }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Show all comments
+function showAllComments(postId) {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    // In a real app, this would open a modal with all comments
+    showToast(`Viewing all ${post.comments.length} comments`);
+  }
+}
+
+// Post menu
+function showPostMenu(postId) {
+  const post = communityPosts.find(p => p.id === postId);
+  if (post) {
+    const menuItems = [
+      post.author === currentUser.name ? 'Delete post' : 'Report post',
+      'Copy link',
+      'Mute author'
+    ];
+    showToast(`Menu: ${menuItems.join(' · ')}`);
+  }
+}
+
+// Sort posts
+function sortPosts(criteria) {
+  switch (criteria) {
+    case 'likes':
+      filteredPosts.sort((a, b) => b.likes - a.likes);
+      break;
+    case 'comments':
+      filteredPosts.sort((a, b) => b.comments.length - a.comments.length);
+      break;
+    case 'recent':
+    default:
+      filteredPosts.sort((a, b) => b.timestamp - a.timestamp);
+  }
+  renderCommunityPosts();
+}
+
+// Get user stats
+function getUserStats() {
+  const userPosts = communityPosts.filter(p => currentUser.posts.includes(p.id));
+  const userLikes = userPosts.reduce((sum, post) => sum + post.likes, 0);
+  const userComments = userPosts.reduce((sum, post) => sum + post.comments.length, 0);
+  
+  return {
+    posts: userPosts.length,
+    likes: userLikes,
+    comments: userComments
+  };
+}
+
+// Show user profile
+function showUserProfile() {
+  const stats = getUserStats();
+  showToast(`Your stats: ${stats.posts} posts · ${stats.likes} likes · ${stats.comments} comments`);
+}
+
+// Export community data
+function exportCommunityData() {
+  const data = {
+    posts: communityPosts,
+    user: currentUser,
+    exportedAt: new Date().toISOString()
+  };
+  
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = `plantwise-community-${new Date().toISOString().slice(0,10)}.json`;
+  
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+  
+  showToast('📥 Community data exported!');
+}
+
+// Toast notification
+function showToast(message) {
+  const existingToast = document.querySelector('.community-toast');
+  if (existingToast) existingToast.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'community-toast fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 fade-in';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Initialize community page
+function initializeCommunity() {
+  applyFilters();
+  
+  // Add search listener
+  const searchInput = document.getElementById('searchPosts');
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(() => {
+      filterCommunityPosts();
+    }, 300));
+  }
+}
+
+// Debounce helper
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Initialize on page load if community is active
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('page-community')?.classList.contains('active')) {
+    initializeCommunity();
+  }
+});
+
+// Override navigateTo to initialize community when needed
+const originalNavigateTo = window.navigateTo;
+window.navigateTo = function(page) {
+  if (page === 'community') {
+    initializeCommunity();
+  }
+  if (originalNavigateTo) {
+    originalNavigateTo(page);
+  }
+};
+</script>
+
+<style>
+/* Community-specific styles */
+
+/* Post animations */
+@keyframes postAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#communityPosts > div {
+  animation: postAppear 0.5s ease-out forwards;
+}
+
+/* Create post button hover effect */
+#createPostBtn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#createPostBtn:hover .w-12 {
+  transform: rotate(90deg);
+}
+
+#createPostBtn .w-12 {
+  transition: transform 0.3s ease;
+}
+
+/* Form animations */
+#createPostForm {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tag selector */
+#tagSelector {
+  animation: fadeIn 0.2s ease-out;
+}
+
+#tagSelector button {
+  transition: all 0.2s ease;
+}
+
+#tagSelector button:hover {
+  transform: translateY(-2px);
+}
+
+/* Post action buttons */
+#communityPosts button {
+  transition: all 0.2s ease;
+}
+
+/* Like button animation */
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+#communityPosts button:active span {
+  animation: heartBeat 0.3s ease;
+}
+
+/* Image preview */
+#imagePreview {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Comment section */
+.border-l-2 {
+  transition: border-color 0.2s ease;
+}
+
+.border-l-2:hover {
+  border-color: #22c55e;
+}
+
+/* Load more button */
+#loadMoreContainer button {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#loadMoreContainer button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+#loadMoreContainer button:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* Search bar */
+#searchPosts {
+  transition: all 0.3s ease;
+}
+
+#searchPosts:focus {
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* Custom scrollbar for community */
+#communityPosts::-webkit-scrollbar {
+  width: 6px;
+}
+
+#communityPosts::-webkit-scrollbar-track {
+  background: #f0fdf4;
+}
+
+#communityPosts::-webkit-scrollbar-thumb {
+  background: #22c55e;
+  border-radius: 3px;
+}
+
+/* Toast notification */
+.community-toast {
+  animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  #communityPosts .text-xl {
+    font-size: 1.125rem;
+  }
+  
+  #communityPosts .w-12 {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .flex.items-center.gap-6 {
+    gap: 1rem;
+  }
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Empty state illustration */
+.text-6xl {
+  transition: transform 0.3s ease;
+}
+
+.text-6xl:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* User avatar hover effect */
+.w-12.h-12 {
+  transition: all 0.3s ease;
+}
+
+.w-12.h-12:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.4);
+}
+
+/* Post image hover effect */
+.rounded-xl.overflow-hidden img {
+  transition: transform 0.5s ease;
+}
+
+.rounded-xl.overflow-hidden:hover img {
+  transform: scale(1.05);
+}
+
+/* Tag pills */
+.bg-green-100 {
+  transition: all 0.2s ease;
+}
+
+.bg-green-100:hover {
+  background-color: #86efac;
+  transform: translateY(-1px);
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .bg-white {
+    background-color: #1a1a1a;
+  }
+  
+  .text-gray-900 {
+    color: #ffffff;
+  }
+  
+  .text-gray-600 {
+    color: #a0a0a0;
+  }
+  
+  .border-gray-100 {
+    border-color: #333333;
+  }
+}
+</style>

@@ -1,0 +1,745 @@
+ <!-- ==================== AI DETECTION PAGE ==================== -->
+<div id="page-detect" class="page">
+  <section class="py-12 bg-gradient-to-b from-green-50 to-white min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6">
+          <span class="pulse-dot w-2 h-2 bg-green-500 rounded-full"></span>
+          <span class="text-sm font-medium text-green-700">AI-Powered Analysis</span>
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Plant Disease Detection</h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Upload a photo of your plant and our AI will identify any diseases with treatment recommendations.</p>
+      </div>
+
+      <!-- Upload Zone -->
+      <div id="uploadZone" class="upload-zone rounded-3xl p-12 text-center cursor-pointer mb-8" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+        
+        <div id="uploadContent">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-gray-900 mb-2">Drop your plant photo here</h3>
+          <p class="text-gray-500 mb-4">or click to browse from your device</p>
+          <p class="text-sm text-gray-400">Supports: JPG, PNG, WEBP (Max 10MB)</p>
+        </div>
+
+        <div id="uploadPreview" class="hidden">
+          <img id="previewImage" src="" alt="Preview" class="max-h-64 mx-auto rounded-2xl shadow-lg mb-4">
+          <p class="text-green-600 font-medium">Image uploaded! Click to change.</p>
+        </div>
+      </div>
+
+      <!-- Analyze Button -->
+      <div class="text-center mb-12">
+        <button id="analyzeBtn" onclick="analyzeImage()" class="btn-primary px-10 py-4 rounded-full text-white font-semibold text-lg shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <span id="analyzeBtnText">Analyze Plant 🔬</span>
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div id="resultsSection" class="hidden">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-green-100">
+          <!-- Result Header -->
+          <div id="resultHeader" class="bg-gradient-to-r from-yellow-400 to-orange-400 p-6 text-white">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl">⚠️</span>
+              <div>
+                <h3 class="font-display text-2xl font-bold">Disease Detected</h3>
+                <p class="opacity-90">Analysis complete</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-8">
+            <!-- Disease Info -->
+            <div class="flex flex-col sm:flex-row gap-8 mb-8">
+              <div class="flex-1">
+                <p class="text-sm text-gray-500 uppercase tracking-wider mb-2">Disease Identified</p>
+                <h4 id="diseaseName" class="font-display text-3xl font-bold text-gray-900 mb-2">Powdery Mildew</h4>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-500">Confidence:</span>
+                  <div class="flex items-center gap-2">
+                    <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div id="confidenceBar" class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: 94%"></div>
+                    </div>
+                    <span id="confidenceValue" class="text-sm font-semibold text-green-600">94%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sm:w-48">
+                <div id="severityContainer" class="bg-red-50 rounded-2xl p-4 text-center">
+                  <p class="text-sm text-red-600 font-medium mb-1">Severity</p>
+                  <p id="severity" class="text-2xl font-bold text-red-700">Moderate</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-8">
+              <h5 class="font-semibold text-gray-900 mb-2">About This Disease</h5>
+              <p id="diseaseDescription" class="text-gray-600">Powdery mildew is a fungal disease that affects a wide range of plants. It appears as white or gray powdery spots on leaves, stems, and sometimes flowers.</p>
+            </div>
+
+            <!-- Treatment -->
+            <div class="bg-green-50 rounded-2xl p-6 border border-green-100">
+              <h5 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="text-green-600">💊</span> Treatment Suggestions
+              </h5>
+              <ul id="treatmentList" class="space-y-3">
+                <li class="flex items-start gap-3 text-gray-700">
+                  <span class="w-6 h-6 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
+                  Remove and dispose of affected leaves immediately
+                </li>
+                <li class="flex items-start gap-3 text-gray-700">
+                  <span class="w-6 h-6 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
+                  Apply neem oil or fungicidal spray weekly
+                </li>
+                <li class="flex items-start gap-3 text-gray-700">
+                  <span class="w-6 h-6 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
+                  Improve air circulation around the plant
+                </li>
+                <li class="flex items-start gap-3 text-gray-700">
+                  <span class="w-6 h-6 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">4</span>
+                  Avoid overhead watering to prevent spread
+                </li>
+              </ul>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-8 flex flex-col sm:flex-row gap-4">
+              <button onclick="saveToHistory()" class="flex-1 px-6 py-3 rounded-full border-2 border-green-200 text-green-700 font-semibold hover:bg-green-50 transition-all flex items-center justify-center gap-2">
+                <span>💾</span> Save to History
+              </button>
+              <button onclick="resetAnalysis()" class="flex-1 btn-primary px-6 py-3 rounded-full text-white font-semibold">
+                Scan Another Plant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="mt-12 bg-white rounded-2xl p-6 border border-green-100">
+        <h4 class="font-semibold text-gray-900 mb-4">📸 Tips for Best Results</h4>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="flex items-start gap-3">
+            <span class="text-green-500">✓</span>
+            <p class="text-sm text-gray-600">Take photos in good lighting</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-green-500">✓</span>
+            <p class="text-sm text-gray-600">Focus on the affected area</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-green-500">✓</span>
+            <p class="text-sm text-gray-600">Include both healthy and sick parts</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ==================== AI DETECTION FUNCTIONS ====================
+
+// State management
+let uploadedFile = null;
+
+// Disease database with treatments
+const diseaseDatabase = {
+  powderyMildew: {
+    name: 'Powdery Mildew',
+    confidence: 94,
+    severity: 'Moderate',
+    severityColor: 'amber',
+    description: 'Powdery mildew is a fungal disease that affects a wide range of plants. It appears as white or gray powdery spots on leaves, stems, and sometimes flowers.',
+    treatments: [
+      'Remove and dispose of affected leaves immediately',
+      'Apply neem oil or fungicidal spray weekly',
+      'Improve air circulation around the plant',
+      'Avoid overhead watering to prevent spread',
+      'Use baking soda solution (1 tsp per quart of water) as organic treatment'
+    ]
+  },
+  leafSpot: {
+    name: 'Leaf Spot',
+    confidence: 87,
+    severity: 'Mild',
+    severityColor: 'yellow',
+    description: 'Leaf spot diseases are caused by various fungi and bacteria. They create dark spots with yellow halos on leaves that can merge and cause leaf drop.',
+    treatments: [
+      'Remove affected leaves and dispose properly',
+      'Avoid overhead watering',
+      'Apply copper-based fungicide',
+      'Ensure proper spacing between plants',
+      'Mulch around plants to prevent soil splash'
+    ]
+  },
+  rootRot: {
+    name: 'Root Rot',
+    confidence: 91,
+    severity: 'Severe',
+    severityColor: 'red',
+    description: 'Root rot is caused by overwatering and poor drainage. It affects the root system, causing them to become brown, mushy, and foul-smelling.',
+    treatments: [
+      'Stop watering immediately',
+      'Remove plant from pot and trim affected roots',
+      'Repot in fresh, well-draining soil',
+      'Use pot with drainage holes',
+      'Apply hydrogen peroxide solution (1:3 ratio with water)'
+    ]
+  },
+  healthy: {
+    name: 'No Issues Found',
+    confidence: 98,
+    severity: 'Excellent',
+    severityColor: 'green',
+    description: 'Your plant looks healthy! Continue with your current care routine to maintain optimal health.',
+    treatments: [
+      'Maintain consistent watering schedule',
+      'Provide adequate indirect sunlight',
+      'Fertilize during growing season',
+      'Monitor for pests regularly',
+      'Clean leaves monthly for better photosynthesis'
+    ]
+  },
+  rust: {
+    name: 'Rust Fungus',
+    confidence: 89,
+    severity: 'Moderate',
+    severityColor: 'orange',
+    description: 'Rust appears as orange, brown, or yellow pustules on leaf undersides. It spreads quickly in humid conditions.',
+    treatments: [
+      'Remove infected leaves immediately',
+      'Apply sulfur-based fungicide',
+      'Improve air circulation',
+      'Water at base, not on leaves',
+      'Clean up fallen debris around plant'
+    ]
+  },
+  blight: {
+    name: 'Blight',
+    confidence: 86,
+    severity: 'Severe',
+    severityColor: 'red',
+    description: 'Blight causes rapid browning and dying of leaves, stems, and flowers. It spreads quickly in warm, wet conditions.',
+    treatments: [
+      'Remove all infected plant parts',
+      'Apply copper fungicide',
+      'Avoid working with wet plants',
+      'Mulch to prevent soil splash',
+      'Rotate crops if in garden'
+    ]
+  }
+};
+
+// Handle file upload
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Please upload an image file 📸');
+      return;
+    }
+    
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File size too large. Maximum 10MB 📁');
+      return;
+    }
+    
+    uploadedFile = file;
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+      document.getElementById('previewImage').src = event.target.result;
+      document.getElementById('uploadContent').classList.add('hidden');
+      document.getElementById('uploadPreview').classList.remove('hidden');
+      document.getElementById('analyzeBtn').disabled = false;
+      showToast('Image uploaded successfully! Click Analyze to continue 🔍');
+    };
+    
+    reader.onerror = function() {
+      showToast('Error reading file. Please try again ❌');
+    };
+    
+    reader.readAsDataURL(file);
+  }
+}
+
+// Drag and drop functionality
+function setupDragAndDrop() {
+  const uploadZone = document.getElementById('uploadZone');
+  if (!uploadZone) return;
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.add('dragover', 'border-green-600', 'bg-green-50');
+  });
+
+  uploadZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.remove('dragover', 'border-green-600', 'bg-green-50');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadZone.classList.remove('dragover', 'border-green-600', 'bg-green-50');
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      document.getElementById('fileInput').files = e.dataTransfer.files;
+      handleFileUpload({ target: { files: [file] } });
+    } else {
+      showToast('Please drop an image file 📸');
+    }
+  });
+}
+
+// Analyze image with AI simulation
+function analyzeImage() {
+  const btn = document.getElementById('analyzeBtn');
+  const btnText = document.getElementById('analyzeBtnText');
+  
+  // Disable button and show loading state
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="animate-pulse">Analyzing...</span> 🔬';
+  
+  // Simulate AI processing
+  setTimeout(() => {
+    // Randomly select a disease or healthy result
+    const diseases = Object.keys(diseaseDatabase).filter(key => key !== 'healthy');
+    const isHealthy = Math.random() > 0.6; // 40% chance of disease
+    
+    let result;
+    if (isHealthy) {
+      result = diseaseDatabase.healthy;
+    } else {
+      const randomDisease = diseases[Math.floor(Math.random() * diseases.length)];
+      result = diseaseDatabase[randomDisease];
+    }
+    
+    displayResults(result);
+    
+    // Re-enable button
+    btnText.textContent = 'Analyze Plant 🔬';
+    btn.disabled = false;
+    
+    // Scroll to results
+    document.getElementById('resultsSection').scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+    
+  }, 2500); // 2.5 second delay to simulate processing
+}
+
+// Display analysis results
+function displayResults(result) {
+  // Update header based on health status
+  const header = document.getElementById('resultHeader');
+  const isHealthy = result.name === 'No Issues Found';
+  
+  if (isHealthy) {
+    header.className = 'bg-gradient-to-r from-green-400 to-emerald-400 p-6 text-white';
+    header.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">✅</span>
+        <div>
+          <h3 class="font-display text-2xl font-bold">Healthy Plant!</h3>
+          <p class="opacity-90">No diseases detected</p>
+        </div>
+      </div>
+    `;
+  } else {
+    header.className = 'bg-gradient-to-r from-yellow-400 to-orange-400 p-6 text-white';
+    header.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">⚠️</span>
+        <div>
+          <h3 class="font-display text-2xl font-bold">Disease Detected</h3>
+          <p class="opacity-90">Analysis complete</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Update disease info
+  document.getElementById('diseaseName').textContent = result.name;
+  document.getElementById('confidenceBar').style.width = result.confidence + '%';
+  document.getElementById('confidenceValue').textContent = result.confidence + '%';
+  
+  // Update severity with appropriate colors
+  const severityContainer = document.getElementById('severityContainer');
+  const severityEl = document.getElementById('severity');
+  
+  const severityColors = {
+    'Excellent': { bg: 'bg-green-50', text: 'text-green-700' },
+    'Mild': { bg: 'bg-yellow-50', text: 'text-yellow-700' },
+    'Moderate': { bg: 'bg-amber-50', text: 'text-amber-700' },
+    'Severe': { bg: 'bg-red-50', text: 'text-red-700' }
+  };
+  
+  const colorSet = severityColors[result.severity] || severityColors.Moderate;
+  severityContainer.className = `${colorSet.bg} rounded-2xl p-4 text-center`;
+  severityEl.className = `text-2xl font-bold ${colorSet.text}`;
+  severityEl.textContent = result.severity;
+  
+  // Update description
+  document.getElementById('diseaseDescription').textContent = result.description;
+  
+  // Update treatment list
+  const treatmentList = document.getElementById('treatmentList');
+  treatmentList.innerHTML = result.treatments.map((treatment, index) => `
+    <li class="flex items-start gap-3 text-gray-700">
+      <span class="w-6 h-6 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">${index + 1}</span>
+      ${treatment}
+    </li>
+  `).join('');
+  
+  // Show results section
+  document.getElementById('resultsSection').classList.remove('hidden');
+  
+  // Show toast notification
+  if (isHealthy) {
+    showToast('✅ Great news! Your plant is healthy!');
+  } else {
+    showToast(`🔍 Detected: ${result.name}`);
+  }
+}
+
+// Reset analysis for new scan
+function resetAnalysis() {
+  uploadedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadContent').classList.remove('hidden');
+  document.getElementById('uploadPreview').classList.add('hidden');
+  document.getElementById('resultsSection').classList.add('hidden');
+  document.getElementById('analyzeBtn').disabled = true;
+  
+  // Scroll back to top
+  document.querySelector('#page-detect').scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'start' 
+  });
+  
+  showToast('Ready for a new scan! 📸');
+}
+
+// Save scan to history
+function saveToHistory() {
+  const diseaseName = document.getElementById('diseaseName').textContent;
+  const confidence = document.getElementById('confidenceValue').textContent;
+  const date = new Date().toLocaleDateString();
+  
+  // In a real app, this would save to localStorage or database
+  const scanData = {
+    disease: diseaseName,
+    confidence: confidence,
+    date: date,
+    image: uploadedFile ? URL.createObjectURL(uploadedFile) : null
+  };
+  
+  console.log('Saving to history:', scanData);
+  
+  // Show success message
+  showToast('✅ Scan saved to your history!');
+  
+  // Optional: Store in localStorage
+  try {
+    const history = JSON.parse(localStorage.getItem('plantScanHistory') || '[]');
+    history.unshift(scanData);
+    localStorage.setItem('plantScanHistory', JSON.stringify(history.slice(0, 20))); // Keep last 20 scans
+  } catch (e) {
+    console.warn('Could not save to localStorage:', e);
+  }
+}
+
+// Get scan history
+function getScanHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('plantScanHistory') || '[]');
+  } catch (e) {
+    console.warn('Could not load history:', e);
+    return [];
+  }
+}
+
+// Clear scan history
+function clearScanHistory() {
+  if (confirm('Are you sure you want to clear all scan history?')) {
+    localStorage.removeItem('plantScanHistory');
+    showToast('History cleared 🗑️');
+  }
+}
+
+// Export scan data
+function exportScanData() {
+  const history = getScanHistory();
+  if (history.length === 0) {
+    showToast('No scan data to export 📭');
+    return;
+  }
+  
+  const dataStr = JSON.stringify(history, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = `plantwise-scans-${new Date().toISOString().slice(0,10)}.json`;
+  
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+  
+  showToast('📥 Scan data exported!');
+}
+
+// Toast notification
+function showToast(message) {
+  // Remove any existing toast
+  const existingToast = document.querySelector('.toast-notification');
+  if (existingToast) {
+    existingToast.remove();
+  }
+  
+  // Create new toast
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 fade-in';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Initialize camera capture (optional feature)
+function initCameraCapture() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.log('Camera not supported');
+    return;
+  }
+  
+  // This would be expanded for camera capture feature
+  console.log('Camera supported');
+}
+
+// Validate image before upload
+function validateImage(file) {
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  
+  if (!validTypes.includes(file.type)) {
+    return { valid: false, message: 'Please upload JPG, PNG, or WEBP format' };
+  }
+  
+  if (file.size > maxSize) {
+    return { valid: false, message: 'File size must be less than 10MB' };
+  }
+  
+  return { valid: true };
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  setupDragAndDrop();
+  initCameraCapture();
+  
+  // Add keyboard support
+  document.addEventListener('keydown', function(e) {
+    // Press 'Esc' to reset analysis
+    if (e.key === 'Escape' && !document.getElementById('resultsSection').classList.contains('hidden')) {
+      resetAnalysis();
+    }
+  });
+});
+
+// Handle paste event (allow pasting images)
+document.addEventListener('paste', function(e) {
+  const items = (e.clipboardData || e.clipboardData).items;
+  for (let index in items) {
+    const item = items[index];
+    if (item.kind === 'file' && item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      const fileInput = document.getElementById('fileInput');
+      
+      // Create a FileList-like object
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInput.files = dataTransfer.files;
+      
+      handleFileUpload({ target: { files: [file] } });
+      showToast('📋 Image pasted successfully!');
+      break;
+    }
+  }
+});
+</script>
+
+<style>
+/* Additional styles for AI Detection page */
+
+/* Upload zone animations */
+.upload-zone {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 3px dashed #86efac;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px -15px rgba(34, 197, 94, 0.3);
+}
+
+/* Preview image styles */
+#previewImage {
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+#previewImage:hover {
+  border-color: #22c55e;
+  transform: scale(1.02);
+}
+
+/* Results section animations */
+#resultsSection {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Confidence bar animation */
+#confidenceBar {
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Treatment list item hover effect */
+#treatmentList li {
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+#treatmentList li:hover {
+  background-color: #f0fdf4;
+  transform: translateX(5px);
+}
+
+/* Analyze button pulse animation on ready */
+#analyzeBtn:not(:disabled) {
+  animation: gentlePulse 2s infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    box-shadow: 0 10px 30px -5px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 15px 40px -5px rgba(34, 197, 94, 0.6);
+  }
+}
+
+/* Toast notification animation */
+.toast-notification {
+  transition: all 0.3s ease;
+  animation: toastIn 0.3s ease-out;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .upload-zone {
+    padding: 2rem !important;
+  }
+  
+  #resultHeader .text-3xl {
+    font-size: 2rem;
+  }
+  
+  #diseaseName {
+    font-size: 1.75rem;
+  }
+}
+
+/* Loading state for analyze button */
+#analyzeBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#analyzeBtn:disabled .animate-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+/* Severity badge animations */
+#severityContainer {
+  transition: all 0.3s ease;
+}
+
+#severityContainer:hover {
+  transform: scale(1.05);
+}
+
+/* Image preview container */
+#uploadPreview {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Keyboard focus styles */
+button:focus-visible,
+.upload-zone:focus-visible {
+  outline: 3px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* Success checkmark animation for healthy result */
+#resultHeader .text-3xl {
+  animation: bounceIn 0.5s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+</style>
