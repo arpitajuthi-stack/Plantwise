@@ -1,0 +1,542 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantCare · Dashboard</title>
+  <!-- Tailwind (via CDN) for utility classes & smooth base -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Add a bit of custom font feel (optional) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <style>
+  /* General Page Style */
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #f9fafb;
+  }
+
+  .font-display {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Primary Button */
+  .btn-primary {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 16px -6px rgba(34,197,94,0.3);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    transform: scale(1.02);
+  }
+
+  /* Sidebar Card Style */
+  .sidebar-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #dcfce7;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  }
+
+  /* Statistic Cards */
+  .stat-card {
+    transition: all 0.25s ease;
+    border-left: 5px solid #22c55e;
+    background: linear-gradient(145deg, #ffffff, #ecfdf5);
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 30px -10px rgba(34,197,94,0.25);
+  }
+
+  /* Page Switching */
+  .page {
+    display: none;
+  }
+
+  .page.active {
+    display: block;
+  }
+
+  /* Toast Animation */
+  .toast-animate {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Completed Schedule Task */
+  .schedule-done {
+    opacity: 0.6;
+    pointer-events: none;
+    text-decoration: line-through 1px #22c55e;
+  }
+
+  /* Scan Row Hover Effect */
+  .scan-item:hover {
+    background: #f0fdf4;
+    transform: scale(1.01);
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ==================== DASHBOARD PAGE (ID = page-dashboard) ==================== -->
+<div id="page-dashboard" class="page active">
+ <section class="py-12 bg-gradient-to-br from-gray-100 via-green-50 to-gray-200 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+          <h1 class="font-display text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p id="greeting-paragraph" class="text-gray-600">Welcome back! Here's your plant care overview.</p>
+        </div>
+        <!-- New Scan button (navigate to detect) -->
+        <button onclick="navigateTo('detect')" class="btn-primary px-6 py-3 rounded-full text-white font-semibold shadow-lg flex items-center gap-2">
+          <span class="text-xl">➕</span> New Scan
+        </button>
+      </div>
+
+      <!-- Stats Grid (interactive later) -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div class="stat-card p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-3xl">🔬</span>
+            <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">+12%</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 mb-1" id="stat-totalScans">24</p>
+          <p class="text-sm text-gray-500">Total Scans</p>
+        </div>
+        <div class="stat-card p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-3xl">🌿</span>
+            <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">Great!</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 mb-1">18</p>
+          <p class="text-sm text-gray-500">Healthy Plants</p>
+        </div>
+        <div class="stat-card p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-3xl">⚠️</span>
+            <span class="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full">-2</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 mb-1">6</p>
+          <p class="text-sm text-gray-500">Issues Found</p>
+        </div>
+        <div class="stat-card p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-3xl">✅</span>
+            <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">100%</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 mb-1">4</p>
+          <p class="text-sm text-gray-500">Treated</p>
+        </div>
+      </div>
+
+      <!-- Main Grid: Left (Recent Scans) + Right Sidebar -->
+<div class="grid lg:grid-cols-3 gap-8">
+
+  <!-- LEFT: Scan History -->
+  <div class="lg:col-span-2">
+    <div class="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden">
+
+      <!-- Card Header -->
+      <div class="p-6 border-b border-gray-100">
+        <h3 class="font-display text-xl font-bold text-gray-900">
+          Recent Scans
+        </h3>
+      </div>
+
+      <!-- Scan List -->
+      <div id="recent-scans-container" class="divide-y divide-gray-100">
+
+        <!-- Scan 1 -->
+        <div class="p-6 hover:bg-green-50 transition-colors cursor-pointer scan-item"
+             data-scanid="1"
+             onclick="showScanDetails(1)">
+
+          <div class="flex items-center gap-4">
+
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-200 to-green-400 flex items-center justify-center text-2xl">
+              🌱
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h4 class="font-semibold text-gray-900">Monstera Deliciosa</h4>
+                <span class="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                  Healthy
+                </span>
+              </div>
+              <p class="text-sm text-gray-500">Scanned 2 hours ago</p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-sm font-medium text-green-600">98%</p>
+              <p class="text-xs text-gray-500">Confidence</p>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Scan 2 -->
+        <div class="p-6 hover:bg-green-50 transition-colors cursor-pointer scan-item"
+             data-scanid="2"
+             onclick="showScanDetails(2)">
+
+          <div class="flex items-center gap-4">
+
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-2xl">
+              🍃
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h4 class="font-semibold text-gray-900">Fiddle Leaf Fig</h4>
+                <span class="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                  Leaf Spot
+                </span>
+              </div>
+              <p class="text-sm text-gray-500">Scanned yesterday</p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-sm font-medium text-amber-600">87%</p>
+              <p class="text-xs text-gray-500">Confidence</p>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Scan 3 -->
+        <div class="p-6 hover:bg-green-50 transition-colors cursor-pointer scan-item"
+             data-scanid="3"
+             onclick="showScanDetails(3)">
+
+          <div class="flex items-center gap-4">
+
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-200 to-red-400 flex items-center justify-center text-2xl">
+              🌿
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h4 class="font-semibold text-gray-900">Peace Lily</h4>
+                <span class="px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded-full">
+                  Powdery Mildew
+                </span>
+              </div>
+              <p class="text-sm text-gray-500">Scanned 3 days ago</p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-sm font-medium text-red-600">94%</p>
+              <p class="text-xs text-gray-500">Confidence</p>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Scan 4 -->
+        <div class="p-6 hover:bg-green-50 transition-colors cursor-pointer scan-item"
+             data-scanid="4"
+             onclick="showScanDetails(4)">
+
+          <div class="flex items-center gap-4">
+
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-200 to-green-400 flex items-center justify-center text-2xl">
+              🪴
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h4 class="font-semibold text-gray-900">Snake Plant</h4>
+                <span class="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                  Healthy
+                </span>
+              </div>
+              <p class="text-sm text-gray-500">Scanned last week</p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-sm font-medium text-green-600">99%</p>
+              <p class="text-xs text-gray-500">Confidence</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Button -->
+      <div class="p-4 bg-gray-50 text-center">
+        <button onclick="viewAllScans()"
+                class="text-green-600 font-medium hover:text-green-700">
+          View All Scans →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+        <!-- RIGHT sidebar -->
+        <div class="space-y-6">
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-3xl shadow-sm border border-green-100 p-6">
+            <h3 class="font-display text-lg font-bold text-gray-900 mb-4">Quick Links</h3>
+            <div class="space-y-3">
+              <button onclick="navigateTo('blog')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors text-left">
+                <span class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">📚</span>
+                <div><p class="font-medium text-gray-900">Browse Articles</p><p class="text-xs text-gray-500">Learn plant care tips</p></div>
+              </button>
+              <button onclick="navigateTo('community')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors text-left">
+                <span class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">👥</span>
+                <div><p class="font-medium text-gray-900">Community</p><p class="text-xs text-gray-500">Join discussions</p></div>
+              </button>
+              <button onclick="openSettings()" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors text-left">
+                <span class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">⚙️</span>
+                <div><p class="font-medium text-gray-900">Settings</p><p class="text-xs text-gray-500">Manage your account</p></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Daily Tip card (dynamic) -->
+          <div class="gradient-card p-6 border border-green-100">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-2xl">💡</span>
+              <h3 class="font-display text-lg font-bold text-gray-900">Daily Tip</h3>
+            </div>
+            <p class="text-gray-600 text-sm leading-relaxed" id="dailyTip">Water your plants in the morning to reduce evaporation and give them time to absorb moisture before the heat of the day.</p>
+            <button onclick="refreshTip()" class="mt-4 text-green-600 text-sm font-medium hover:text-green-700 flex items-center gap-1">
+              <span class="text-base">↻</span> New Tip
+            </button>
+          </div>
+
+          <!-- Plant Care Schedule -->
+          <div class="bg-white rounded-3xl shadow-sm border border-green-100 p-6">
+            <h3 class="font-display text-lg font-bold text-gray-900 mb-4">📅 Care Schedule</h3>
+            <div class="space-y-3" id="schedule-list">
+              <!-- monster -->
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 transition-colors schedule-item" data-id="monstera">
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                <div class="flex-1"><p class="text-sm font-medium text-gray-900">Water Monstera</p><p class="text-xs text-gray-500">Today</p></div>
+                <button class="text-xs text-green-600 hover:text-green-700 schedule-done-btn" data-id="monstera">✓ Done</button>
+              </div>
+              <!-- fiddle -->
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 transition-colors schedule-item" data-id="fiddle">
+                <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                <div class="flex-1"><p class="text-sm font-medium text-gray-900">Fertilize Fiddle Leaf</p><p class="text-xs text-gray-500">Tomorrow</p></div>
+                <button class="text-xs text-green-600 hover:text-green-700 schedule-done-btn" data-id="fiddle">✓ Done</button>
+              </div>
+              <!-- pests -->
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 transition-colors schedule-item" data-id="pests">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div class="flex-1"><p class="text-sm font-medium text-gray-900">Check for pests</p><p class="text-xs text-gray-500">In 2 days</p></div>
+                <button class="text-xs text-green-600 hover:text-green-700 schedule-done-btn" data-id="pests">✓ Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ==================== SCRIPT: dashboard functions ==================== -->
+<script>
+  (function() {
+    // ---------- DATA ----------
+    const dailyTips = [
+      "Water your plants in the morning to reduce evaporation and give them time to absorb moisture before the heat of the day.",
+      "Most houseplants prefer indirect sunlight. Direct sun can burn their leaves.",
+      "Check soil moisture before watering - stick your finger an inch deep. If it's dry, water; if moist, wait.",
+      "Clean leaves regularly to help plants breathe and absorb more light.",
+      "Group plants together to create humidity through transpiration.",
+      "Rotate your plants weekly for even growth on all sides.",
+      "Use room temperature water - cold water can shock plant roots.",
+      "Fertilize less in winter when plants are dormant.",
+      "Yellow leaves often mean overwatering; brown edges might mean low humidity.",
+      "Repot in spring when plants enter their active growing phase."
+    ];
+
+    const scanDetails = {
+      1: { plantName: "Monstera Deliciosa", status: "Healthy", date: "March 15, 2024", confidence: 98, image: "🌱", notes: "Plant appears healthy with good leaf color and new growth." },
+      2: { plantName: "Fiddle Leaf Fig", status: "Leaf Spot", date: "March 14, 2024", confidence: 87, image: "🍃", notes: "Brown spots with yellow halos detected. Possible fungal infection." },
+      3: { plantName: "Peace Lily", status: "Powdery Mildew", date: "March 12, 2024", confidence: 94, image: "🌿", notes: "White powdery substance on leaves. Improve air circulation." },
+      4: { plantName: "Snake Plant", status: "Healthy", date: "March 8, 2024", confidence: 99, image: "🪴", notes: "Plant thriving. Continue minimal watering." }
+    };
+
+    // schedule items (internal state)
+    let scheduleItems = [
+      { id: 'monstera', task: 'Water Monstera', due: 'Today', completed: false },
+      { id: 'fiddle', task: 'Fertilize Fiddle Leaf', due: 'Tomorrow', completed: false },
+      { id: 'pests', task: 'Check for pests', due: 'In 2 days', completed: false }
+    ];
+
+    // ---------- HELPER: toast (if global not exists) ----------
+    function showToast(message) {
+      if (typeof window.showToast === 'function') {
+        window.showToast(message);
+      } else {
+        // remove any existing toast
+        const old = document.querySelector('.custom-toast');
+        if(old) old.remove();
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 toast-animate';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+    }
+
+    // ---------- DASHBOARD SPECIFIC FUNCTIONS ----------
+    window.showScanDetails = function(scanId) {
+      const scan = scanDetails[scanId];
+      if (scan) {
+        showToast(`🔍 ${scan.plantName} · ${scan.status} (${scan.confidence}% confidence)`);
+        console.log('Scan detail:', scan);
+      }
+    };
+
+    window.viewAllScans = function() {
+      showToast('📊 Loading all scan history ...');
+    };
+
+    window.openSettings = function() {
+      showToast('⚙️ Settings panel (demo)');
+    };
+
+    window.refreshTip = function() {
+      const tipEl = document.getElementById('dailyTip');
+      if (tipEl) {
+        const randomIndex = Math.floor(Math.random() * dailyTips.length);
+        tipEl.textContent = dailyTips[randomIndex];
+        showToast('💡 New tip loaded');
+      }
+    };
+
+    // mark schedule complete (by id)
+    window.markComplete = function(itemId) {
+      const item = scheduleItems.find(i => i.id === itemId);
+      if (!item || item.completed) return;
+
+      item.completed = true;
+
+      // update UI: disable button + add line-through style
+      const scheduleContainer = document.getElementById('schedule-list');
+      const items = scheduleContainer.querySelectorAll('.schedule-item');
+      items.forEach(row => {
+        if (row.dataset.id === itemId) {
+          const btn = row.querySelector('.schedule-done-btn');
+          if (btn) {
+            btn.textContent = '✓ Done';
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'schedule-done');
+          }
+          // optional visual: row.style.textDecoration = 'line-through';
+        }
+      });
+
+      showToast(`✅ ${item.task} marked complete!`);
+      // optional: update fake stats (like Treated count), but we leave that for realism.
+      // we also have the "treated" stat unchanged, but it's okay for demo.
+    };
+
+    // attach schedule button listeners (also keep inline onclick for fallback)
+    document.querySelectorAll('.schedule-done-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (id) window.markComplete(id);
+      });
+    });
+
+    // initialize dashboard: time-based greeting, random tip, etc.
+    window.initializeDashboard = function() {
+      const hour = new Date().getHours();
+      const greeting = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
+      const greetElem = document.getElementById('greeting-paragraph');
+      if (greetElem) {
+        greetElem.textContent = `${greeting}! Here's your plant care overview.`;
+      }
+      // set random daily tip
+      const tipEl = document.getElementById('dailyTip');
+      if (tipEl) {
+        const randomTip = dailyTips[Math.floor(Math.random() * dailyTips.length)];
+        tipEl.textContent = randomTip;
+      }
+      // reset schedule completed state if needed (for demo, but we keep completed as false initially)
+      scheduleItems.forEach(item => item.completed = false);
+      document.querySelectorAll('.schedule-done-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'schedule-done');
+        btn.textContent = '✓ Done';
+      });
+      console.log('Dashboard initialized');
+    };
+
+    // override or set navigateTo to handle page changes & call initialize
+    const originalNavigate = window.navigateTo;
+    window.navigateTo = function(page) {
+      // hide all pages (if multiple .page exist). For this demo only dashboard exists.
+      if (page === 'dashboard') {
+        // only one page, just init
+        initializeDashboard();
+      } else {
+        // for blog, community, detect etc — just toast demo
+        showToast(`🌿 Navigating to ${page} (demo)`);
+      }
+      if (originalNavigate) originalNavigate(page);
+    };
+
+    // if dashboard active on DOM load, init
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.getElementById('page-dashboard')?.classList.contains('active')) {
+        initializeDashboard();
+      }
+    });
+
+    // Also expose showToast globally if needed
+    window.showToast = showToast;
+  })();
+</script>
+
+<!-- extra style adjustment for disabled schedule buttons -->
+<style>
+  .schedule-done-btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    text-decoration: none;
+  }
+  .schedule-item button:not(:disabled):hover {
+    background-color: #dcfce7;
+    border-radius: 9999px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+</style>
+
+<!-- hidden note: additional page stubs (only one page here) -->
+</body>
+</html>
